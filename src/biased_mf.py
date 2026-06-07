@@ -1,5 +1,6 @@
 import numpy as np
 from numpy.typing import NDArray
+from settings import RANDOM_SEED
 
 RatingPair = tuple[int, float]
 TrainRowsByUser = list[list[RatingPair]]
@@ -14,14 +15,17 @@ class BiasedMatrixFactorization:
         self.regularization_lambda = regularization_lambda
         self.iteration_count = iteration_count
         self.global_mean_rating = 0.0
-        self.user_bias = None
-        self.item_bias = None
-        self.user_factors = None
-        self.item_factors = None
+        self.user_bias: NDArray[float] | None = None
+        self.item_bias: NDArray[float] | None = None
+        self.user_factors: NDArray[float] | None = None
+        self.item_factors: NDArray[float] | None = None
         self.training_loss_per_iteration = []
 
 
-    """Multiply the user and item latent vectors (dot product) and add the biases and the global mean rating."""
+    """
+        Multiply the user and item latent vectors (dot product) and
+        add the biases and the global mean rating.
+    """
     def predict(self, user_index: int, item_index: int) -> float:
         user_vector = self.user_factors[user_index]
         item_vector = self.item_factors[item_index]
@@ -34,7 +38,9 @@ class BiasedMatrixFactorization:
         )
 
 
-    """Loop through the user-item ID pairs and predict the rating for each pair."""
+    """
+        Loop through the user-item ID pairs and predict the rating for each pair.
+    """
     def predict_ratings_for_pairs(
         self,
         user_indices: NDArray[int],
@@ -51,6 +57,23 @@ class BiasedMatrixFactorization:
         return predictions
 
 
+    """
+        Fit the model to the training data with alternating least squares (ALS).
+        prediction(u, i) = mu + b_u + b_i + p(u)^T q(i)
+        u = user index, i = item index
+        mu = global mean rating (self.global_mean_rating)
+        b_u = user bias, b_i = item bias
+        p(u) = latent user vector, q(i) = latent item vector
+        lambda = self.regularization_lambda
+
+        Each ALS iteration:
+        1. Fix item factors and biases, update each p(u) via least squares
+        2. Fix user factors and biases, update each q(i) via least squares
+        3. Fix latent factors, update b_u, b_i, and mu from rating residuals
+        4. Compute training loss = sum of squared errors + lambda * (||P||^2 + ||Q||^2)
+
+        Repeat for self.iteration_count rounds (see settings).
+    """
     def fit(
         self,
         train_user_indices: NDArray[int],
@@ -70,12 +93,13 @@ class BiasedMatrixFactorization:
         # Create latent user vectors (user=row) with columns=rank and assign random normal values to them.
         # All zeros would make every dot product zero, so users and items would not separate.
         # Small random starts let ALS (later) update each vector in a different direction.
-        self.user_factors = np.random.normal(scale=0.01, size=(user_count, self.rank))
+        random_generator = np.random.default_rng(RANDOM_SEED)
+        self.user_factors = random_generator.normal(0.0, 0.01, size=(user_count, self.rank))
 
         # Create latent item vectors (item=row) with columns=rank and assign random normal values to them.
         # All zeros would make every dot product zero, so users and items would not separate.
         # Small random starts let ALS (later) update each vector in a different direction.
-        self.item_factors = np.random.normal(scale=0.01, size=(item_count, self.rank))
+        self.item_factors = random_generator.normal(0.0, 0.01, size=(item_count, self.rank))
 
         # Create empty lists for each user and item to store the ratings.
         train_rows_by_user = [[] for _ in range(user_count)]
@@ -154,7 +178,10 @@ class BiasedMatrixFactorization:
             self.user_factors[user_index] = np.linalg.solve(matrix_a, vector_b)
 
 
-    """This function works the same way as the _update_user_factors function, but for the item factors."""
+    """
+        This function works the same way as the _update_user_factors function above,
+        but for the item factors. It updates the item factors via least squares.
+    """
     def _update_item_factors(
         self, train_rows_by_item: TrainRowsByItem, identity_matrix: NDArray[float]
     ) -> None:
@@ -177,6 +204,22 @@ class BiasedMatrixFactorization:
             self.item_factors[item_index] = np.linalg.solve(matrix_a, vector_b)
 
 
+    """
+        Here we update user bias, item bias, and global mean with latent factors fixed.
+        prediction(u, i) = mu + b_u + b_i + p(u)^T q(i)
+        u = user index, i = item index
+        mu = global mean rating (self.global_mean_rating)
+        b_u = user bias (self.user_bias)
+        b_i = item bias (self.item_bias)
+        p(u) = latent user vector, q(i) = latent item vector
+
+        b_u = mean over items i rated by u of:
+            rating(u, i) - mu - b_i - p(u)^T q(i)
+        b_i = mean over users u who rated i of:
+            rating(u, i) - mu - b_u - p(u)^T q(i)
+        mu = mean over all observed ratings of:
+            rating(u, i) - b_u - b_i - p(u)^T q(i)
+    """
     def _update_bias_terms(
         self, train_rows_by_user: TrainRowsByUser, train_rows_by_item: TrainRowsByItem
     ) -> None:
@@ -225,6 +268,17 @@ class BiasedMatrixFactorization:
             self.global_mean_rating = float(np.mean(global_residuals))
 
 
+    """
+        Compute the training loss after one ALS iteration.
+        loss = sum over training ratings of (rating - prediction)^2
+             + lambda * (||P||^2 + ||Q||^2)
+        rating = observed training rating
+        prediction = mu + b_u + b_i + p(u)^T q(i)
+        lambda = self.regularization_lambda
+        P = all user factor vectors (self.user_factors)
+        Q = all item factor vectors (self.item_factors)
+        ||P||^2 + ||Q||^2 = sum of squared entries in P and Q
+    """
     def _compute_training_loss(
         self,
         train_user_indices: NDArray[int],

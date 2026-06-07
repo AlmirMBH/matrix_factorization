@@ -11,6 +11,17 @@ from settings import (
 )
 
 
+"""
+    Load the ratings CSV and remap original user/item IDs to sequential indices.
+    Original IDs (e.g. MovieLens userId, movieId) are not always 0, 1, 2, ...
+    user_index = 0 .. user_count - 1
+    item_index = 0 .. item_count - 1
+    user_count = number of unique users
+    item_count = number of unique items
+    rating_count = number of observed ratings
+    rated_user_item_pairs_ratio = rating_count / (user_count * item_count)
+    Returns the remapped dataframe plus these counts and the sparsity ratio.
+"""
 def load_and_remap_ratings() -> tuple[pd.DataFrame, int, int, int, float]:
     ratings_dataframe = pd.read_csv(DATASET_RATINGS_PATH)
     unique_user_ids = ratings_dataframe[RATINGS_USER_ID_COLUMN].unique()
@@ -46,6 +57,13 @@ def load_and_remap_ratings() -> tuple[pd.DataFrame, int, int, int, float]:
     )
 
 
+"""
+    Split remapped ratings into train and test sets per user.
+    For each user_index, shuffle that user's rows with RANDOM_SEED (see settings).
+    test_row_count = max(1, floor(user_rating_count * TEST_FRACTION))
+    Users with one rating stay entirely in train.
+    Returns train_dataframe and test_dataframe.
+"""
 def split_train_and_test(ratings_dataframe: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     train_parts = []
     test_parts = []
@@ -63,6 +81,16 @@ def split_train_and_test(ratings_dataframe: pd.DataFrame) -> tuple[pd.DataFrame,
     return train_dataframe, test_dataframe
 
 
+"""
+    Load cached train/test CSVs from output/ or create them on first run.
+    If TRAIN_RATINGS_PATH and TEST_RATINGS_PATH exist, read them and recompute counts.
+    Otherwise call load_and_remap_ratings(), split_train_and_test(), and save both CSVs.
+    user_count = number of unique users (max user_index + 1)
+    item_count = number of unique items (max item_index + 1)
+    rating_count = len(train) + len(test)
+    rated_user_item_pairs_ratio = rating_count / (user_count * item_count)
+    Returns train_dataframe, test_dataframe, and these counts.
+"""
 def load_or_create_train_test_split() -> tuple[pd.DataFrame, pd.DataFrame, int, int, int, float]:
     train_path = TRAIN_RATINGS_PATH
     test_path = TEST_RATINGS_PATH

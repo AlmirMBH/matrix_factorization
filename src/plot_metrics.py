@@ -1,7 +1,24 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+from typing import TypedDict
 from metrics import baseline_comparison_message
 from settings import OUTPUT_DIRECTORY
+
+
+class RunMetrics(TypedDict):
+    user_count: int
+    item_count: int
+    rating_count: int
+    rated_user_item_pairs_ratio_percent: float
+    train_rating_count: int
+    test_rating_count: int
+    latent_rank: int
+    regularization_lambda: float
+    als_iteration_count: int
+    rmse_test: float
+    mae_test: float
+    rmse_baseline_global_mean: float
+    mae_baseline_global_mean: float
 
 
 def _truncate_title(title: str, max_length: int = 40) -> str:
@@ -11,7 +28,7 @@ def _truncate_title(title: str, max_length: int = 40) -> str:
 
 
 def plot_run_metrics(
-    metrics: dict[str, float | int],
+    metrics: RunMetrics,
     loss_per_iteration_dataframe: pd.DataFrame,
     example_predictions_dataframe: pd.DataFrame,
 ) -> None:

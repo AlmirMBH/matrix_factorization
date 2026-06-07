@@ -1,10 +1,9 @@
-from typing import TypedDict
 from data_ingestion import load_or_create_train_test_split
 from export_outputs import save_csv, save_json
 from recommendations import top_item_recommendations
 from evaluate_model import evaluate_model, plot_example_predictions_dataframe, test_predictions_dataframe
 from train_model import load_or_train_model, training_loss_dataframe
-from plot_metrics import plot_run_metrics
+from plot_metrics import RunMetrics, plot_run_metrics
 from settings import (
     ALS_ITERATION_COUNT,
     DEMO_USER_INDEX,
@@ -15,22 +14,15 @@ from settings import (
 )
 
 
-class RunMetrics(TypedDict):
-    user_count: int
-    item_count: int
-    rating_count: int
-    rated_user_item_pairs_ratio_percent: float
-    train_rating_count: int
-    test_rating_count: int
-    latent_rank: int
-    regularization_lambda: float
-    als_iteration_count: int
-    rmse_test: float
-    mae_test: float
-    rmse_baseline_global_mean: float
-    mae_baseline_global_mean: float
-
-
+"""
+    Run the full recommendation pipeline from data load through export and plot.
+    1. Load or create train/test CSVs (load_or_create_train_test_split)
+    2. Load or train the model (load_or_train_model)
+    3. Evaluate on the test split (evaluate_model)
+    4. Build demo top-N recommendations for DEMO_USER_INDEX
+    5. Save metrics, predictions, loss, and recommendation CSVs to output/
+    6. Print key metrics and show the summary plot (plot_run_metrics)
+"""
 def run() -> None:
     output_directory = OUTPUT_DIRECTORY
     output_directory.mkdir(exist_ok=True)
@@ -82,5 +74,5 @@ def run() -> None:
     print("rmse_test:", metrics["rmse_test"])
     print("mae_test:", metrics["mae_test"])
     print("rmse_baseline_global_mean:", metrics["rmse_baseline_global_mean"])
+    print("mae_baseline_global_mean:", metrics["mae_baseline_global_mean"])
     plot_run_metrics(metrics, loss_per_iteration_output, example_predictions_output)
-    return None

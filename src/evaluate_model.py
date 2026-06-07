@@ -26,9 +26,9 @@ class EvaluationResults(TypedDict):
 
 
 """
-Baseline prediction is the train global mean rating (1x2067 array).
-Baseline RMSE is the RMSE of the baseline predicted ratings, see
-formula in the function implementation.
+    Baseline prediction is the train global mean rating (1x2067 array).
+    Baseline RMSE is the RMSE of the baseline predicted ratings, see
+    formula in the function implementation.
 """
 def evaluate_model(
     model: BiasedMatrixFactorization, test_dataframe: pd.DataFrame
@@ -55,7 +55,9 @@ def evaluate_model(
     }
 
 
-"""Format the test predictions into a dataframe."""
+"""
+    Format the test predictions into a dataframe.
+"""
 def test_predictions_dataframe(
     evaluation_results: EvaluationResults,
 ) -> pd.DataFrame:
@@ -70,9 +72,9 @@ def test_predictions_dataframe(
 
 
 """
-Sample test rows with known ratings for the metrics plot.
-This is evaluation display only. It is not the same as top_item_recommendations,
-which ranks unrated items for one user.
+    Sample test rows with known ratings for the metrics plot. This is evaluation
+    display only. It is not the same as top_item_recommendations, which ranks
+    unrated items for one user.
 """
 def plot_example_predictions_dataframe(
     test_dataframe: pd.DataFrame,

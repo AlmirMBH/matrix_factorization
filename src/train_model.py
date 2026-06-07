@@ -27,18 +27,30 @@ def train_model() -> BiasedMatrixFactorization:
     return model
 
 
+"""
+    Save a trained BiasedMatrixFactorization object to TRAINED_MODEL_PATH via pickle
+    for the following runs to speed up the process. Creates the output directory if
+    it does not exist. model = fitted model with factors, biases,
+    and training_loss_per_iteration
+"""
 def save_model(model: BiasedMatrixFactorization) -> None:
     TRAINED_MODEL_PATH.parent.mkdir(exist_ok=True)
     with TRAINED_MODEL_PATH.open("wb") as model_file:
         pickle.dump(model, model_file)
 
 
+"""
+    Load a trained BiasedMatrixFactorization object from
+    TRAINED_MODEL_PATH via pickle.
+"""
 def load_model() -> BiasedMatrixFactorization:
     with TRAINED_MODEL_PATH.open("rb") as model_file:
         return pickle.load(model_file)
 
 
-"""Load the model if it exists, otherwise train a new model and save it."""
+"""
+    Load the model if it exists, otherwise train a new model and save it.
+"""
 def load_or_train_model() -> BiasedMatrixFactorization:
     if TRAINED_MODEL_PATH.exists():
         return load_model()
@@ -47,7 +59,9 @@ def load_or_train_model() -> BiasedMatrixFactorization:
     return model
 
 
-"""Format the training loss into a dataframe e.g. iteration 1: 0.1, iteration 2: 0.09, etc."""
+"""
+    Format the training loss into a dataframe e.g. iteration 1: 0.1, iteration 2: 0.09, etc.
+"""
 def training_loss_dataframe(model: BiasedMatrixFactorization) -> pd.DataFrame:
     return pd.DataFrame(
         {
