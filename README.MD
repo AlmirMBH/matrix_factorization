@@ -350,7 +350,7 @@ The function `main()` calls `run()`. The function `run()` loads or creates the t
 
 ## Contact
 
-Contacts for questions and collaboration are [**Almir Mustafic**](https://github.com/AlmirMBH) and [**Merim Jusufbegovic**](https://github.com/MerimJusufbegovic).
+Contacts for questions and collaboration are [**Almir Mustafic**](https://github.com/AlmirMBH) and [**Merim Jusufbegovic**](https://github.com/MerimJ).
 
 ---
 
