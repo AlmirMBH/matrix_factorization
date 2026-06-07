@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environment (created in src/ per README)
+src/.venv/
+.venv/
+venv/
+ENV/
+
+# Generated pipeline outputs (see settings.py)
+output/
+
+# macOS
+.DS_Store
+
+# LaTeX build artifacts (source and PDF are kept)
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo

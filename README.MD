@@ -90,6 +90,14 @@ matrix_factorization/
     └── export_outputs.py
 ```
 
+### Source code readability
+
+The Python modules in `src/` use type annotations on function arguments and return values. Examples include `NDArray[float]` for NumPy arrays, `pd.DataFrame` for tabular data, and named types such as `EvaluationResults` where a function returns a structured result. These annotations clarify what each function expects and produces without changing runtime behavior.
+
+Each function also has a short comment above it. In the core algorithm (`biased_mf.py`) and the data pipeline (`data_ingestion.py`), these comments state the formulas and symbol definitions used in the implementation. Additional inline comments appear inside longer functions where a step is easier to follow with a brief note (for example during ALS factor updates or id remapping).
+
+This documentation is intended to make the implementation easier to read as well as to help locate specific parts of the code while reading the accompanying seminar paper.
+
 
 ---
 
@@ -114,7 +122,7 @@ The file `settings.py` holds all paths and hyperparameters. Other modules read v
 | `REGULARIZATION_LAMBDA` | The $L_2$ penalty on factor matrices (default 10.0) |
 | `ALS_ITERATION_COUNT` | The number of ALS training rounds (default 40). During development, values from 10 to 70 were tried in steps of 10. |
 | `TEST_FRACTION` | The fraction of ratings used for test (default 0.2) |
-| `RANDOM_SEED` | The random seed for shuffling before the split (default 42) |
+| `RANDOM_SEED` | The random seed for shuffling before the split and for latent-factor initialization in `fit()` (default 42) |
 | `TOP_RECOMMENDATION_COUNT` | The number of items in the demo recommendation file (default 10) |
 | `DEMO_USER_INDEX` | The user index used for the demo recommendation file (default 0) |
 | `PLOT_EXAMPLE_COUNT` | The number of sample test predictions shown on the plot (default 8) |
@@ -296,8 +304,6 @@ The train-test split is done per user. Every user in the test split also has at 
 
 An item can still have no train rows if all of its ratings land in test splits. ALS never updates that item's latent vector, so predictions involving that item are unreliable. This edge case is called a cold start, and requires other approaches to be solved, e.g. content-based clustering, which is out of the scope of this project.
 
-The recommendation export lists internal item indices and not movie titles. Movie titles require a separate join with `movies.csv`.
-
 Hyperparameters are fixed in `settings.py` and are not searched automatically. During development, ALS iteration counts from 10 to 70 were tried in steps of 10. Test RMSE changed only minimally beyond 40.
 
 Recommendation scores are the model's raw prediction outputs and are not clipped to the 1--5 MovieLens rating range. For top-$N$ ranking, only item order matters.
@@ -317,11 +323,10 @@ The function `top_item_recommendations(user_index, top_count)` in `recommendatio
 3. All item indices that the chosen user already rated in train are collected and excluded.
 4. For every remaining item index, the model predicts a rating with $\hat{r}_{ui} = \mu + b_u + b_i + \mathbf{p}_u^\top \mathbf{q}_i$.
 5. Items are sorted by predicted rating from highest to lowest.
-6. The first `top_count` items are written to `output/top{top_count}_user_{user_index}.csv` with columns `item_index` and `predicted_rating`.
+6. Each `item_index` is mapped to `movieId` from the train split and joined with `movies.csv` to attach movie titles.
+7. The first `top_count` items are written to `output/top{top_count}_user_{user_index}.csv` with columns `item_index`, `movie_title`, and `predicted_rating`.
 
 The default demo uses `user_index` 0 and `top_count` 10 from `settings.py`. Each row in the output file is a movie the user has not rated in train, ranked by the model's raw prediction scores. Values above 5.0 can appear because the model is not constrained to the MovieLens star range.
-
-The export uses internal item indices. A join with `movies.csv` is required to attach movie titles.
 
 ---
 

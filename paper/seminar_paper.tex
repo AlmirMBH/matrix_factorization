@@ -142,7 +142,7 @@ Latent rank $k$ & 10 & Dimension of $\mathbf{p}_u$ and $\mathbf{q}_i$ \\
 Regularization $\lambda$ & 10 & $L_2$ penalty on factor matrices \\
 ALS iterations & 40 & Training rounds \\
 Test fraction & 0.20 & Per-user hold-out \\
-Random seed & 42 & Split reproducibility \\
+Random seed & 42 & Split and latent-factor initialization reproducibility \\
 Top-$N$ recommendations & 10 & Illustrative ranking length \\
 \hline
 \end{tabular}
@@ -280,7 +280,7 @@ The remaining errors in Table~\ref{tab:examples} and the item cold-start issue n
 
 The per-user split ensures train history for every test user, but about 750 test items still had no train ratings. Those items keep weakly estimated latent vectors and unreliable predictions, which is a known item cold-start limitation of collaborative filtering~\cite{ref10}. All hyperparameters in Table~\ref{tab:hparams} ($k=10$, $\lambda=10$, 40 ALS iterations, seed 42) were set in advance and held fixed for the entire study. No cross-validation or grid search was used to tune them on MovieLens Latest Small. The top-10 list in Table~\ref{tab:top10} is ranked by the model's raw prediction scores. Several values exceed 5.0, so they must not be read as literal MovieLens star ratings. For that example, only item order is meaningful. The evaluation covers offline rating prediction and top-$N$ ranking and does not address online serving, model refresh, or hybrid content features.
 
-Future work should tune hyperparameters with cross-validation, clip predicted scores to the 1--5 range, and join movie titles to internal item indexes in recommendation exports for readability. Incorporating movie metadata could also reduce item cold-start error~\cite{ref4,ref10}.
+Future work should tune hyperparameters with cross-validation and clip predicted scores to the 1--5 range. Incorporating movie metadata could also reduce item cold-start error~\cite{ref4,ref10}.
 
 \section{Conclusion}
 
