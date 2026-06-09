@@ -4,7 +4,7 @@ This project is a simulation of a movie recommendation system based on biased ma
 
 ---
 
-## 1) Project Background
+## Project Background
 
 This is an undergraduate project for the course **Machine Learning: Unsupervised Techniques** at the Faculty of Electrical Engineering, University of Sarajevo. The supervisor is **Professor Nermin Covic**.
 
@@ -18,7 +18,7 @@ The seminar paper **Recommender Systems Using Matrix Factorization** presents bi
 
 ---
 
-## 2) Technologies
+## Technologies
 
 | Library | Role |
 |---------|------|
@@ -32,7 +32,7 @@ All Python dependencies are listed in `requirements.txt`.
 
 ---
 
-## 3) Project Setup
+## Project Setup
 
 ### First run
 
@@ -65,7 +65,7 @@ The app waits on `plt.show()` until the plot window is closed.
 
 ---
 
-## 4) Project Structure
+## Project Structure
 
 ```
 matrix_factorization/
@@ -101,7 +101,7 @@ This documentation is intended to make the implementation easier to read as well
 
 ---
 
-## 5) Settings File (`settings.py`)
+## Settings File (`settings.py`)
 
 The file `settings.py` holds all paths and hyperparameters. Other modules read values from this file instead of taking them as function arguments.
 
@@ -129,7 +129,7 @@ The file `settings.py` holds all paths and hyperparameters. Other modules read v
 
 ---
 
-## 6) Dataset and Data Preparation
+## Dataset and Data Preparation
 
 ### Source
 
@@ -150,7 +150,7 @@ On MovieLens small about $1.7\%$ of all user–item pairs have a rating.
 
 ---
 
-## 7) Recommender Algorithm Selection
+## Recommender Algorithm Selection
 
 Two approaches were considered for this project. Plain matrix factorization (MF) predicts a rating from latent vectors only. Biased matrix factorization (BMF) also adds the global mean $\mu$, a per-user bias $b_u$, and a per-item bias $b_i$. BMF was selected because MovieLens star ratings follow clear patterns. Some users give higher or lower scores than others. Some movies get higher or lower scores than others. MF would have to learn those patterns inside the latent vectors. BMF models them directly and is commonly used for star ratings. This project trains BMF with alternating least squares (ALS).
 
@@ -207,7 +207,7 @@ The training loss plot shows this objective after each iteration. It is the sum 
 
 ---
 
-## 8) Model
+## Model
 
 The model class is `BiasedMatrixFactorization` in `biased_mf.py`. The class is implemented in this project and is not imported from an external library.
 
@@ -233,7 +233,7 @@ A prediction for user index $u$ and item index $i$ is computed as $\hat{r}_{ui} 
 
 ---
 
-## 9) Evaluation
+## Evaluation
 
 All evaluation metrics are computed on the held-out test split.
 
@@ -278,7 +278,7 @@ Only `trained_model.pkl` holds the fitted recommender. The CSV and JSON files ar
 
 ---
 
-## 10) Results
+## Results
 
 The table below shows one of the runs on MovieLens small with default settings and random seed 42 (user 0).
 
@@ -298,7 +298,7 @@ The test $\mathrm{RMSE}$ and $\mathrm{MAE}$ are lower than the baseline values. 
 
 ---
 
-## 11) Known Limitations
+## Known Limitations
 
 The train-test split is done per user. Every user in the test split also has at least one rating in train.
 
@@ -312,7 +312,7 @@ This is a batch script written for coursework. It is not set up as a deployed re
 
 ---
 
-## 12) Recommendations
+## Recommendations
 
 Recommendations use the saved model in `trained_model.pkl`.
 
@@ -330,7 +330,7 @@ The default demo uses `user_index` 0 and `top_count` 10 from `settings.py`. Each
 
 ---
 
-## 13) Application Flow
+## Application Flow
 
 ```
 main.py
